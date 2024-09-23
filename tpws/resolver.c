@@ -16,19 +16,13 @@
 
 #define SIG_BREAK SIGUSR1
 
-#ifdef __APPLE__
-	static const char *sem_name="/tpws_resolver";
-#endif
-
 TAILQ_HEAD(resolve_tailhead, resolve_item);
 
 typedef struct
 {
 	int fd_signal_pipe;
 	sem_t *sem;
-#ifndef __APPLE__
 	sem_t _sem;
-#endif
 	struct resolve_tailhead resolve_list;
 	pthread_mutex_t resolve_list_lock;
 	int threads;
@@ -159,11 +153,7 @@ void resolver_deinit(void)
 		pthread_mutex_destroy(&resolver.resolve_list_lock);
 		free(resolver.thread);
 
-		#ifdef __APPLE__
-			sem_close(resolver.sem);
-		#else
-			sem_destroy(resolver.sem);
-		#endif
+		sem_destroy(resolver.sem);
 
 		resolver_clear_list();
 
@@ -181,27 +171,12 @@ bool resolver_init(int threads, int fd_signal_pipe)
 	memset(&resolver,0,sizeof(resolver));
 	resolver.bInit = true;
 
-#ifdef __APPLE__
-	// MacOS does not support unnamed semaphores
-
-	char sn[64];
-	snprintf(sn,sizeof(sn),"%s_%d",sem_name,getpid());
-	resolver.sem = sem_open(sn,O_CREAT,0600,0);
-	if (resolver.sem==SEM_FAILED)
-	{
-		DLOG_PERROR("sem_open");
-		goto ex;
-	}
-	// unlink immediately to remove tails
-	sem_unlink(sn);
-#else
 	if (sem_init(&resolver._sem,0,0)==-1)
 	{	
 		DLOG_PERROR("sem_init");
 		goto ex;
 	}
 	resolver.sem = &resolver._sem;
-#endif
 
 	if (pthread_mutex_init(&resolver.resolve_list_lock, NULL)) goto ex;
 

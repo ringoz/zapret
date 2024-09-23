@@ -1,6 +1,7 @@
 CC ?= gcc
 CFLAGS += -std=gnu99 -Os -flto=auto
 CFLAGS_SYSTEMD = -DUSE_SYSTEMD
+CFLAGS += -DCOMPAT_ENABLE_ITIMERSPEC -DCOMPAT_ENABLE_KQUEUE1 -DCOMPAT_ENABLE_PPOLL -DCOMPAT_ENABLE_SEM -DCOMPAT_ENABLE_SIGOPS -DEPOLL_SHIM_DISABLE_WRAPPER_MACROS -include epoll-shim/src/compat_kqueue1.h -include epoll-shim/src/compat_ppoll.h -include epoll-shim/src/compat_itimerspec.h -include epoll-shim/src/compat_sigops.h -include epoll-shim/src/compat_sem.h
 CFLAGS_BSD = -Wno-address-of-packed-member
 LIBS = -lz -lpthread
 LIBS_SYSTEMD = -lsystemd
