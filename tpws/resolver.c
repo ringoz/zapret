@@ -171,11 +171,7 @@ bool resolver_init(int threads, int fd_signal_pipe)
 	memset(&resolver,0,sizeof(resolver));
 	resolver.bInit = true;
 
-	if (sem_init(&resolver._sem,0,0)==-1)
-	{	
-		DLOG_PERROR("sem_init");
-		goto ex;
-	}
+	sem_init(&resolver._sem,0,0);
 	resolver.sem = &resolver._sem;
 
 	if (pthread_mutex_init(&resolver.resolve_list_lock, NULL)) goto ex;
